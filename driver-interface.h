@@ -2,11 +2,15 @@
 #define DRIVER_INTERFACE_H_INCLUDED
 
 // This is the interface of fuctions a driver must support.
+// IF YOU ADD ANYTHING TO THIS FILE, IT SHOULD BE ADDED TO
+// THE driver_t PUBLIC INTERFACE SO PEOPLE CAN USE IT (and
+// populate the field in load_driver()
 
+#include "mho-types.h"
 #include <time.h>
 
 #ifndef DRIVER_IMPL
-struct {} driver_device_t;
+struct driver_device_t {};
 #endif
 
 enum device_state_t {
@@ -16,6 +20,9 @@ enum device_state_t {
 
 // Driver state functions
 
+// This should be the same as the shared object name. This is
+// because we need to be able to find the driver to load from
+// this identifier after a server restart
 const char *get_name();
 bool load();
 void unload();
@@ -31,14 +38,12 @@ void add_to_util_list(); // FIXME: real impl
 // autodiscovery
 std::vector<std::string> discover_device_addresses();
 
-// Create (in database) and connect to device
-driver_device_t *create_device(std::string address);
-driver_device_t *connect_to_device(std::string address);
+driver_device_t *connect_to_device(mho::device_id_t device);
 void disconnect_device(driver_device_t *dev);
 
-// the device should not be connected at this point
-// this removes it from the database
-void delete_device(std::string address);
+// for use before force-unloading a module... which isnt a great
+// idea...
+void disconnect_all_devices();
 
 std::string get_device_address(driver_device_t *dev);
 

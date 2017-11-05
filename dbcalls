@@ -1,0 +1,14 @@
+
+mho::driver_id_t get_driver_id_or_create(string driver_name);
+    find or create entry in table drivers
+    this should rarely create things, so i'm not worried about not populating the other fields.
+
+mho::driver_id_t create_driver(string driver_name, string pretty_name, string description)
+    create entry in driver
+
+mho::device_id_t create_device(... all fields except device_id)
+    I dont use this yet, it will be needed in util.call()
+
+mho::reading_id_t add_reading(mho::device_id_t, struct timespec t, value_t raw_value, value_t adj_value)
+
+

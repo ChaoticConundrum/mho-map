@@ -16,6 +16,8 @@ SET(SOURCES
     connection.h
     netthread.h
     netthread.cpp
+    driver.h
+    driver.cpp
 )
 
 ### =================== BUILD =================== ###
