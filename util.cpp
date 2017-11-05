@@ -2,6 +2,10 @@
 #include "util.h"
 #include "mhodb.h"
 
+#include <sstream>
+#include <string>
+#include <iomanip>
+
 #define RETURN_INVALID_JSON(message) do { \
 resp["status"] = "failure"; \
 resp["reason"] = message \
@@ -11,6 +15,13 @@ return resp; \
 using namespace LibChaos;
 
 namespace util {
+
+std::string timespec_to_string(struct timespec *t){
+    std::stringstream ss;
+    ss << t->tv_sec << '.'
+       << std::setfill('0') << std::setw(9) << t->tv_nsec;
+    return ss.str();
+}
 
 ZJSON call(ZJSON input){
     ZJSON json(ZJSON::OBJECT);
@@ -33,24 +44,32 @@ ZJSON call(ZJSON input){
 
     MhoDB *db = MhoDB::instance();
 
-    // FIXME: offload into util.call(string map)
     if(func == "version"){
         resp_data["version"] = "0.2.0";
+
     } else if(func == "fetch_data_by_node"){
         // check if we have valid id list etc
+        
+        struct timespec ts_start, ts_end;
+
+        // for each node
         for(size_t i = 0; i < json["args"]["ids"].array().size(); ++i){
-            // FIXME: verify type of json object is correct
-            ZJSON valueArray(ZJSON::ARRAY);
-            // fetch data from db
-            for(int j = 0; j < 2; ++i){
+            mho::node_id_t node_id = (int)json["args"]["ids"][i].number();
+            std::vector<mho::reading_info> readings = db->filter_readings_node_time(node_id, &ts_start, &ts_end);
+
+            ZJSON array(ZJSON::ARRAY);
+            // for every entry
+            for(auto datapoint: readings){
                 ZJSON data(ZJSON::OBJECT);
-                data["time"] = ((double)time(nullptr)) + j/2;
-                data["power"] = 5; // sin(time(nullptr)/3600.0) + 2.0;
-                valueArray[i] = data;
+                data["node_id"]   = datapoint.node_id;
+                data["time"]      = ZString(timespec_to_string(&datapoint.time));
+                data["power"]     = datapoint.adj_value;
+                data["raw_value"] = datapoint.raw_value;
+                array.array().push(data);
             }
-            resp_data[ZString((int)json["args"]["ids"][i].number())] = valueArray;
+            resp_data[ZString(node_id)] = array;
         }
-        // FIXME: call driver
+
     } else if(func == "get_all_nodes"){
         std::vector<mho::node_info> nodes = db->list_nodes();
         for(auto node: nodes){
@@ -64,8 +83,20 @@ ZJSON call(ZJSON input){
 
             resp_data[ZString(node.node_id)] = node_data;
         }
+
     } else if(func == "get_all_devices"){
     } else if(func == "get_all_nodes"){
+    } else if(func == "create_device"){
+        mho::driver_id_t driver_id = (uint32_t)json["args"]["driver_id"].number();
+        std::string description    = json["args"]["description"].string().str();
+        mho::node_id_t  node_id    = (int)json["args"]["node_id"].number();
+        double calibration         = json["args"]["calibration"].number();
+        std::string address        = json["args"]["address"].string().str();
+
+        mho::device_id_t dev_id = db->create_device(driver_id, description, node_id, calibration, address);
+        json["args"]["device_id"] = (double)dev_id;
+
+        resp_data = json["args"];
     }
 
     resp["resp"] = resp_data;
