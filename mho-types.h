@@ -41,6 +41,7 @@ struct device_info {
 struct reading_info {
     reading_id_t reading_id;
     node_id_t node_id;
+    device_id_t device_id;
     value_t raw_value;
     value_t adj_value;
     struct timespec time;

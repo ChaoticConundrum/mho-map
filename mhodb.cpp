@@ -31,12 +31,6 @@ MhoDB::MhoDB(ZPath file){
         ELOG("create table failed");
     }
 
-    //res = db.execute("SELECT COUNT(*) FROM node_tree", tbl);
-
-    //stmt_create_driver = db.prepare("INSERT INTO drivers (name, user_description) VALUES (:name, :desc)");
-    //stmt_get_driver_info = db.prepare("SELECT driver_id, name, user_description FROM drivers WHERE driver_id IS :id");
-    //stmt_set_driver_info = db.prepare("UPDATE drivers SET name = :name, user_description = :desc WHERE driver_id = :id");
-
 }
 
 //! Create new driver
@@ -61,10 +55,11 @@ driver_id_t MhoDB::get_driver_id_or_create(string name){
     res = db.execute(sel, tbl);
     if(res != 0) ELOG("sql execute failed");
 
-    if(tbl.rowCount())
+    if(tbl.rowCount()){
         return tbl.field("driver_id", 0).toUint();
-    else
+    } else {
         return create_driver(name, "");
+    }
 }
 
 //! Get driver info
@@ -75,6 +70,7 @@ driver_info MhoDB::get_driver_info(driver_id_t driver){
 
     ZString sel = ZString("SELECT name, user_description FROM drivers WHERE driver_id = ") + driver;
     res = db.execute(sel, tbl);
+    if(res != 0) ELOG("sql execute failed");
 
     info.driver_id = driver;
     info.name = tbl.field("name", 0).str();
@@ -85,8 +81,12 @@ driver_info MhoDB::get_driver_info(driver_id_t driver){
 
 // Set driver user desription
 int MhoDB::set_driver_description(driver_id_t driver, string description){
+    int res;
+    ZString upd = ZString("UPDATE drivers SET user_description = '") + description + "' WHERE driver_id = " + driver;
+    res = db.execute(upd);
+    if(res != 0) ELOG("sql execute failed");
 
-    return -1;
+    return res;
 }
 
 
@@ -94,7 +94,7 @@ int MhoDB::set_driver_description(driver_id_t driver, string description){
 device_id_t MhoDB::create_device(driver_id_t driver, string description, node_id_t node, value_t calibration, string address){
     int res;
 
-    int state = (node < 0 ? mho::INACTIVE : mho::ACTIVE);
+    int state = (node < 1 ? mho::INACTIVE : mho::ACTIVE);
 
     res = db.execute(ZString("INSERT INTO devices (driver_id, description, node_id, calibration, address, state) VALUES (") + driver + ", '" + description + "', " + node + ", " + calibration + ", '" + address + "', " + state + ")");
     if(res != 0) ELOG("sql execute failed");
@@ -114,6 +114,7 @@ device_info MhoDB::get_device_info(device_id_t device){
 
     ZString sel = ZString("SELECT driver_id, description, node_id, calibration, address, state FROM devices WHERE device_id = ") + device;
     res = db.execute(sel, tbl);
+    if(res != 0) ELOG("sql execute failed");
 
     info.device_id = device;
     info.driver_id = tbl.field("driver_id", 0).toUint();
@@ -128,17 +129,48 @@ device_info MhoDB::get_device_info(device_id_t device){
 
 //! Set device description
 int MhoDB::set_device_description(device_id_t device, string description){
-    return -1;
+    int res;
+    ZString upd = ZString("UPDATE devices SET description = '") + description + "' WHERE device_id = " + device;
+    res = db.execute(upd);
+    if(res != 0) ELOG("sql execute failed");
+
+    return res;
 }
 
 //! Set device node (or deactivate)
 int MhoDB::set_device_node(device_id_t device, node_id_t node){
-    return -1;
+    int res;
+
+    int state = (node < 1 ? mho::INACTIVE : mho::ACTIVE);
+
+    ZString upd = ZString("UPDATE devices SET node = ") + node + ", state = " + state + " WHERE device_id = " + device;
+    res = db.execute(upd);
+    if(res != 0) ELOG("sql execute failed");
+
+    return res;
 }
 
 //! Get list of non-deleted devices
 vector<device_info> MhoDB::list_devices(){
+    int res;
     vector<device_info> list;
+
+    ZTable tbl;
+    ZString sel = ZString("SELECT device_id, driver_id, description, node_id, calibration, address, state FROM devices WHERE state != 2");
+    res = db.execute(sel, tbl);
+    if(res != 0) ELOG("sql execute failed");
+    DLOG("list_devices: " << tbl.rowCount());
+
+    list.resize(tbl.rowCount());
+    for(int i = 0; i < tbl.rowCount(); ++i){
+        list[i].device_id = tbl.field("device_id", i).toUint();
+        list[i].driver_id = tbl.field("driver_id", i).toUint();
+        list[i].description = tbl.field("user_description", i).str();
+        list[i].node_id = tbl.field("node_id", i).toUint();
+        list[i].calibration = std::stod(tbl.field("calibration", i).str());
+        list[i].address = tbl.field("address", i).str();
+        list[i].state = (mho::device_state)tbl.field("state", i).tint();
+    }
 
     return list;
 }
@@ -150,14 +182,15 @@ reading_id_t MhoDB::add_reading(device_id_t device, struct timespec *time, value
 
     ZTable tbl;
     res = db.execute(ZString("SELECT node_id, calibration FROM devices WHERE device_id = ") + device, tbl);
+    if(res != 0) ELOG("sql execute failed");
 
     DLOG("add_reading node_id: " << tbl.field("node_id", 0));
     value_t calib = std::stod(tbl.field("calibration", 0).str());
 
     ZString ins = ZString("INSERT INTO readings (node_id, device_id, raw_value, adj_value, time_sec, time_nsec) VALUES (") + tbl.field("node_id", 0) + ", " + device + ", " + raw_value + ", " + raw_value * calib + ", " + time->tv_sec + ", " + time->tv_nsec + ")";
-    //LOG(ins);
     res = db.execute(ins);
     if(res != 0) ELOG("sql execute failed");
+
     //LOG(sqlite3_errmsg(db.handle()));
 
     ZTable tbl3;
@@ -169,7 +202,21 @@ reading_id_t MhoDB::add_reading(device_id_t device, struct timespec *time, value
 
 //! Get reading info
 reading_info MhoDB::get_reading_info(reading_id_t reading){
+    int res;
+    ZTable tbl;
     reading_info info;
+
+    ZString sel = ZString("SELECT node_id, device_id, raw_value, adj_value, time_sec, time_nsec FROM readings WHERE reading_id = ") + reading;
+    res = db.execute(sel, tbl);
+    if(res != 0) ELOG("sql execute failed");
+
+    info.reading_id = reading;
+    info.node_id = tbl.field("node_id", 0).toUint();
+    info.device_id = tbl.field("device_id", 0).toUint();
+    info.raw_value = std::stod(tbl.field("raw_value", 0).str());
+    info.adj_value = std::stod(tbl.field("adj_value", 0).str());
+    info.time.tv_sec = tbl.field("time_sec", 0).toUint();
+    info.time.tv_nsec = tbl.field("time_nsec", 0).toUint();
 
     return info;
 }
@@ -177,23 +224,63 @@ reading_info MhoDB::get_reading_info(reading_id_t reading){
 
 //! Create node
 node_id_t MhoDB::create_node(node_id_t parent, string name, string description){
-    return 0;
+    int res;
+    struct timespec ts;
+    timespec_get(&ts, TIME_UTC);
+
+    ZString ins = ZString("INSERT INTO node_tree (parent_id, name, description, time_added, time_removed) VALUES (") + parent + ", '" + name + "', '" + description + "', " + ts.tv_sec + ", 0)";
+    res = db.execute(ins);
+    if(res != 0) ELOG("sql execute failed");
+
+    ZTable tbl;
+    res = db.execute("SELECT last_insert_rowid()", tbl);
+    if(res != 0) ELOG("sql execute failed");
+
+    return tbl.field(0, 0).toUint();
 }
 
 //! Get node info
 node_info MhoDB::get_node_info(node_id_t node){
+    int res;
+    ZTable tbl;
     node_info info;
+
+    ZString sel = ZString("SELECT parent_id, name, description, time_added, time_removed FROM node_tree WHERE node_id = ") + node;
+    res = db.execute(sel, tbl);
+    if(res != 0) ELOG("sql execute failed");
+
+    info.node_id = node;
+    info.parent_id = tbl.field("parent_id", 0).toUint();
+    info.name = tbl.field("name", 0).str();
+    info.description = tbl.field("description", 0).str();
+    info.time_added = tbl.field("time_added", 0).toUint();
+    info.time_removed = tbl.field("time_removed", 0).toUint();
 
     return info;
 }
 
 //! Set node name, description
-int MhoDB::set_node_info(node_id_t, string name, string description){
-    return -1;
+int MhoDB::set_node_info(node_id_t node, string name, string description){
+    int res;
+    int state = (node < 1 ? mho::INACTIVE : mho::ACTIVE);
+
+    ZString upd = ZString("UPDATE node_tree SET name = '") + name + "', description = '" + description + "' WHERE node_id = " + node;
+    res = db.execute(upd);
+    if(res != 0) ELOG("sql execute failed");
+
+    return res;
 }
 
 //! Remove node
 int MhoDB::remove_node(node_id_t node){
-    return -1;
+    int res;
+    struct timespec ts;
+    timespec_get(&ts, TIME_UTC);
+
+    ZString upd = ZString("UPDATE node_tree SET time_removed = ") + ts.tv_sec + "' WHERE node_id = " + node;
+    res = db.execute(upd);
+    if(res != 0) ELOG("sql execute failed");
+
+    return res;
 }
 
