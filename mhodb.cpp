@@ -331,6 +331,28 @@ vector<node_info> MhoDB::list_nodes(){
     return list;
 }
 
+//! Get list of non-deleted devices
+vector<driver_info> MhoDB::list_drivers(){
+    int res;
+    vector<driver_info> list;
+
+    ZTable tbl;
+    ZString sel = ZString("SELECT driver_id, user_description, name FROM drivers");
+    res = db.execute(sel, tbl);
+    LOG(sqlite3_errmsg(db.handle()));
+    if(res != 0) ELOG("sql execute failed");
+    DLOG("list_drivers: " << tbl.rowCount());
+
+    list.resize(tbl.rowCount());
+    for(int i = 0; i < tbl.rowCount(); ++i){
+        list[i].driver_id   = tbl.field("driver_id", i).toUint();
+        list[i].description = tbl.field("user_description", i).str();
+        list[i].name        = tbl.field("name", i).str();
+    }
+
+    return list;
+}
+
 
 MhoDB *MhoDB::_instance = nullptr;
 

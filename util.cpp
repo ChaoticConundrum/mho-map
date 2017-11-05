@@ -23,10 +23,13 @@ std::string timespec_to_string(struct timespec *t){
     return ss.str();
 }
 
-ZJSON call(ZJSON input){
-    ZJSON json(ZJSON::OBJECT);
+ZJSON call(ZJSON json){
     if(!json.object().contains("func") || json["func"].type() != ZJSON::STRING
         || !json.object().contains("seq") || json["seq"].type() != ZJSON::NUMBER){
+        ELOG("1:" << (!json.object().contains("func"))
+          << " 2:" << (json["func"].type() != ZJSON::STRING)
+          << " 3:" << (!json.object().contains("seq"))
+          << " 4:" << (json["seq"].type() != ZJSON::NUMBER));
         ELOG("invalid request fields (need \"func\" and \"seq\")");
         ZJSON resp(ZJSON::OBJECT);
         resp["error"] = "invalid fields";
@@ -85,7 +88,34 @@ ZJSON call(ZJSON input){
         }
 
     } else if(func == "get_all_devices"){
+        std::vector<mho::device_info> devices = db->list_devices();
+        for(auto device: devices){
+            ZJSON device_data(ZJSON::OBJECT);
+
+            device_data["device_id"]   = (double)device.device_id;
+            device_data["driver_id"]   = (double)device.driver_id;
+            device_data["node_id"]     = (double)device.node_id;
+            device_data["description"] = ZString(device.description);
+            device_data["calibration"] = (double)device.calibration;
+            device_data["address"]     = ZString(device.address);
+            device_data["device_state"] = (double)device.state;
+
+            resp_data[ZString(device.device_id)] = device_data;
+        }
     } else if(func == "get_all_nodes"){
+    } else if(func == "get_all_drivers"){
+        std::vector<mho::driver_info> drivers = db->list_drivers();
+        for(auto driver: drivers){
+            ZJSON driver_data(ZJSON::OBJECT);
+
+            driver_data["driver_id"]   = (double)driver.driver_id;
+            driver_data["name"]        = ZString(driver.name);
+            driver_data["driver_description"] = ZString(driver.description);
+            driver_data["user_description"]   = ZString(driver.description);
+
+            resp_data[ZString(driver.driver_id)] = driver_data;
+        }
+
     } else if(func == "create_device"){
         mho::driver_id_t driver_id = (uint32_t)json["args"]["driver_id"].number();
         std::string description    = json["args"]["description"].string().str();

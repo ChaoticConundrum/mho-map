@@ -53,6 +53,9 @@ public:
     //! Get list of all nodes
     vector<node_info> list_nodes();
 
+    //! Get list of all drivers
+    vector<driver_info> list_drivers();
+
 public:
     static MhoDB *instance();
 
