@@ -9,6 +9,8 @@
 #include "mho-types.h"
 #include <time.h>
 
+#include "mhodb.h"
+
 #ifndef DRIVER_IMPL
 namespace mho {
 struct driver_device_t {};
@@ -26,7 +28,7 @@ enum device_state_t {
 // because we need to be able to find the driver to load from
 // this identifier after a server restart
 const char *get_name();
-bool load();
+bool load(MhoDB *db);
 void unload();
 
 // return nullptr on no error

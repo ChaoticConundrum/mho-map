@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "mhodb.h"
+
 #include "driver-interface.h"
 
 namespace mho {
@@ -11,7 +13,7 @@ namespace mho {
 // This pretty much mirrors everything in driver-interface.h
 struct driver_t {
     const char *(*get_name)();
-    bool (*load)();
+    bool (*load)(MhoDB *db);
     void (*unload)();
     const char *(*error)();
 
@@ -33,7 +35,7 @@ struct driver_t {
 std::vector<std::string> get_availible_drivers();
 
 // takes name as in "faux-driver", NOT "libfaux-driver.so"
-driver_t *load_driver(std::string name);
+driver_t *load_driver(std::string name, MhoDB *db);
 bool unload_driver(driver_t *driver);
 
 } // mho
