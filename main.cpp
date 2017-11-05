@@ -22,6 +22,7 @@ int main(int argc, char **argv){
     try {
 
         MhoDB db("psb.db");
+        //db.create_driver("test", "test driver");
 
         std::thread device_poller(device_poll_loop, &db);
 

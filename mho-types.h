@@ -12,7 +12,7 @@ namespace mho {
 typedef uint32_t driver_id_t;
 typedef uint32_t device_id_t;
 typedef uint64_t reading_id_t;
-typedef uint32_t node_id_t;
+typedef int32_t node_id_t;
 
 typedef double value_t;
 
