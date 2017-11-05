@@ -11,6 +11,8 @@ ADD_SUBDIRECTORY(drivers)
 
 SET(SOURCES
     main.cpp
+    mhodb.h
+    mhodb.cpp
     tcpserver.h
     tcpserver.cpp
     connection.h
