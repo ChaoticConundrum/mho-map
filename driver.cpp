@@ -2,6 +2,8 @@
 
 #include "driver.h"
 
+#include "zlog.h"
+
 #define LOAD_SYM_OR_RETURN(sym_name) do { \
     driver->sym_name = (typeof(driver->sym_name))dlsym(lib, #sym_name); \
     if(!driver->sym_name){ \
@@ -20,7 +22,7 @@ std::vector<std::string> get_availible_drivers(){
     return list;
 }
 
-driver_t *get_driver(std::string name){
+driver_t *load_driver(std::string name){
     std::string libname = "driver/lib" + name + ".so";
 
     void *lib = dlopen(libname.c_str(), RTLD_LAZY);
@@ -58,6 +60,8 @@ driver_t *get_driver(std::string name){
 
     driver->load();
 
+    ILOG("Loaded driver \"" << name << "\"");
+
     return driver;
 }
 
@@ -66,6 +70,8 @@ bool unload_driver(driver_t *driver){
     driver->unload();
 
     dlclose(driver->lib);
+
+    ILOG("Unloaded driver \"" << name << "\"");
 
     delete driver;
 

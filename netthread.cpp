@@ -6,6 +6,8 @@
 #include "zjson.h"
 
 #include <unistd.h>
+#include <time.h>
+#include <math.h>
 
 void sendData(ZPointer<Connection> conn, const ZBinary &data){
     // Send data
@@ -69,6 +71,7 @@ void *NetThread::run(void *arg){
                     ZJSON json;
                     if(!json.decode(str) || json.type() != ZJSON::OBJECT){
                         ELOG("invalid request json");
+                        ELOG(json.decode(str) << " " << (json.type() != ZJSON::OBJECT));
                         conn->in_buffer.clear();
                         ZJSON resp(ZJSON::OBJECT);
                         resp["error"] = "invalid json";
@@ -99,8 +102,17 @@ void *NetThread::run(void *arg){
                         resp_data["version"] = "0.1.0";
                     } else if(func == "fetch_data_by_node"){
                         // check if we have valid id list etc
-                        // for
-                        // resp_data[""];
+                        for(size_t i = 0; i < json["args"]["ids"].array().size(); ++i){
+                            // FIXME: verify type of json object is correct
+                            ZJSON valueArray(ZJSON::ARRAY);
+                            for(int j = 0; j < 2; ++i){
+                                ZJSON data(ZJSON::OBJECT);
+                                data["time"] = ((double)time(nullptr)) + j/2;
+                                data["power"] = sin(time(nullptr)/3600.0) + 2.0;
+                                valueArray[i] = data;
+                            }
+                            resp_data[ZString((int)json["args"]["ids"][i].number())] = valueArray;
+                        }
                         // FIXME: call driver
                     }
 
