@@ -22,7 +22,13 @@ int main(int argc, char **argv){
     try {
 
         MhoDB db("psb.db");
-        db.create_driver("test", "test driver");
+
+        driver_id_t dr = db.create_driver("test", "test driver");
+        device_id_t dev = db.create_device(dr, "test device", 0, 1.0f, "local");
+        struct timespec ts;
+        timespec_get(&ts, TIME_UTC);
+        reading_id_t r = db.add_reading(dev, ts, 4.2645);
+        LOG("reading: " << r);
 
         std::thread device_poller(device_poll_loop, &db);
 
@@ -87,7 +93,7 @@ void device_poll_loop(void *data){
         }
 
         // sleep until 1 second after we started
-        { using namespace std::chrono_literals; 
+        { using namespace std::chrono_literals;
             start += 1s; }
         std::this_thread::sleep_until(start);
     }

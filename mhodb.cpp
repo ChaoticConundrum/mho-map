@@ -16,7 +16,7 @@ MhoDB::MhoDB(ZPath file){
         ELOG("create table failed");
     }
 
-    res = db.execute("CREATE TABLE IF NOT EXISTS devices (device_id INTEGER PRIMARY KEY ASC, type_id INTEGER, description TEXT, node_id INTEGER, calibration REAL, address TEXT, state INTEGER)", tbl);
+    res = db.execute("CREATE TABLE IF NOT EXISTS devices (device_id INTEGER PRIMARY KEY ASC, driver_id INTEGER, description TEXT, node_id INTEGER, calibration REAL, address TEXT, state INTEGER)", tbl);
     if(res != 0){
         ELOG("create table failed");
     }
@@ -31,41 +31,26 @@ MhoDB::MhoDB(ZPath file){
         ELOG("create table failed");
     }
 
-    stmt_last_id = db.prepare("SELECT last_insert_rowid()");
-    if(!stmt_last_id.ok()) ELOG("failed prepare");
+    //res = db.execute("SELECT COUNT(*) FROM node_tree", tbl);
 
-    stmt_create_driver = db.prepare("INSERT INTO drivers (name, user_description) VALUES (:name, :desc)");
-    if(!stmt_last_id.ok()) ELOG("failed prepare");
-    stmt_get_driver_info = db.prepare("SELECT driver_id, name, user_description FROM drivers WHERE driver_id IS :id");
-    if(!stmt_last_id.ok()) ELOG("failed prepare");
-    stmt_set_driver_info = db.prepare("UPDATE drivers SET name = :name, user_description = :desc WHERE driver_id = :id");
-    if(!stmt_last_id.ok()) ELOG("failed prepare");
+    //stmt_create_driver = db.prepare("INSERT INTO drivers (name, user_description) VALUES (:name, :desc)");
+    //stmt_get_driver_info = db.prepare("SELECT driver_id, name, user_description FROM drivers WHERE driver_id IS :id");
+    //stmt_set_driver_info = db.prepare("UPDATE drivers SET name = :name, user_description = :desc WHERE driver_id = :id");
 
 }
 
 //! Create new driver
 driver_id_t MhoDB::create_driver(string name, string description){
     int res;
-    LOG("1");
-    res = stmt_create_driver.bind(1, name);
-    if(res != 0) ELOG("sql bind failed");
-    //LOG(sqlite3_errmsg(db.handle()));
 
-    LOG("2");
-    res = stmt_create_driver.bind(2, description);
-    if(res != 0) ELOG("sql bind failed");
-    LOG("3");
+    res = db.execute(ZString("INSERT INTO drivers (name, user_description) VALUES ('") + name + "', '" + description +"')");
+    if(res != 0) ELOG("sql execute failed");
 
     ZTable tbl;
-    res = stmt_create_driver.execute(tbl);
+    res = db.execute("SELECT last_insert_rowid()", tbl);
     if(res != 0) ELOG("sql execute failed");
-    LOG("rows: " << tbl.rowCount());
 
-    res = stmt_last_id.execute(tbl);
-    if(res != 0) ELOG("sql execute failed");
-    LOG("rows: " << tbl.rowCount());
-
-    return 0;
+    return tbl.field(0, 0).toUint();
 }
 
 //! Get ID of driver name or create driver with name and return ID
@@ -90,7 +75,18 @@ int MhoDB::set_driver_description(driver_id_t driver, string description){
 
 //! Create device
 device_id_t MhoDB::create_device(driver_id_t driver, string description, node_id_t node, value_t calibration, string address){
-    return 0;
+    int res;
+
+    int state = (node < 0 ? mho::INACTIVE : mho::ACTIVE);
+
+    res = db.execute(ZString("INSERT INTO devices (driver_id, description, node_id, calibration, address, state) VALUES (") + driver + ", '" + description + "', " + node + ", " + calibration + ", '" + address + "', " + state + ")");
+    if(res != 0) ELOG("sql execute failed");
+
+    ZTable tbl;
+    res = db.execute("SELECT last_insert_rowid()", tbl);
+    if(res != 0) ELOG("sql execute failed");
+
+    return tbl.field(0, 0).toUint();
 }
 
 //! Get device info
@@ -120,7 +116,25 @@ vector<device_info> MhoDB::list_devices(){
 
 //! Add reading entry
 reading_id_t MhoDB::add_reading(device_id_t device, struct timespec time, value_t raw_value){
-    return 0;
+    int res;
+
+    ZTable tbl;
+    res = db.execute(ZString("SELECT node_id, calibration FROM devices WHERE device_id = ") + device, tbl);
+
+    DLOG("add_reading node_id: " << tbl.field("node_id", 0));
+    value_t calib = std::stod(tbl.field("calibration", 0).str());
+
+    ZString ins = ZString("INSERT INTO readings (node_id, device_id, raw_value, adj_value, time_sec, time_nsec) VALUES (") + tbl.field("node_id", 0) + ", " + device + ", " + raw_value + ", " + raw_value * calib + ", " + time.tv_sec + ", " + time.tv_nsec + ")";
+    //LOG(ins);
+    res = db.execute(ins);
+    if(res != 0) ELOG("sql execute failed");
+    //LOG(sqlite3_errmsg(db.handle()));
+
+    ZTable tbl3;
+    res = db.execute("SELECT last_insert_rowid()", tbl3);
+    if(res != 0) ELOG("sql execute failed");
+
+    return tbl3.field(0, 0).toUint();
 }
 
 //! Get reading info

@@ -51,25 +51,6 @@ public:
 
 private:
     ZDatabase db;
-
-    ZDatabase::Prepared stmt_last_id;
-
-    ZDatabase::Prepared stmt_create_driver;
-    ZDatabase::Prepared stmt_get_driver_info;
-    ZDatabase::Prepared stmt_set_driver_info;
-
-    ZDatabase::Prepared stmt_create_device;
-    ZDatabase::Prepared stmt_get_device_info;
-    ZDatabase::Prepared stmt_set_device_info;
-    ZDatabase::Prepared stmt_list_devices;
-
-    ZDatabase::Prepared stmt_add_reading;
-    ZDatabase::Prepared stmt_get_reading;
-
-    ZDatabase::Prepared stmt_create_node;
-    ZDatabase::Prepared stmt_get_node_info;
-    ZDatabase::Prepared stmt_set_node_info;
-    ZDatabase::Prepared stmt_remove_node;
 };
 
 #endif // MHODB_H
