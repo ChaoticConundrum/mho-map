@@ -39,6 +39,8 @@ public:
     reading_id_t add_reading(device_id_t device, struct timespec *time, value_t raw_value);
     //! Get reading info
     reading_info get_reading_info(reading_id_t reading);
+    //! Filter readings by node and time range
+    vector<reading_info> filter_readings_node_time(node_id_t node, struct timespec *start, struct timespec *end);
 
     //! Create node
     node_id_t create_node(node_id_t parent, string name, string description);

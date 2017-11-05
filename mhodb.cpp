@@ -221,6 +221,30 @@ reading_info MhoDB::get_reading_info(reading_id_t reading){
     return info;
 }
 
+vector<reading_info> MhoDB::filter_readings_node_time(node_id_t node, struct timespec *start, struct timespec *end){
+    int res;
+    ZTable tbl;
+    vector<reading_info> list;
+
+    //ZString sel = ZString("SELECT reading_id, node_id, device_id, raw_value, adj_value, time_sec, time_nsec FROM readings WHERE node_id = ") + node + " AND time_sec > " + start->tv_sec + " AND time_nsec > " + start->tv_nsec + " AND time_sec < " + end->tv_sec + " AND time_nsec < " + end->tv_nsec;
+    ZString sel = ZString("SELECT reading_id, node_id, device_id, raw_value, adj_value, time_sec, time_nsec FROM readings WHERE node_id = ") + node + " AND time_sec >= " + start->tv_sec + " AND time_sec <= " + end->tv_sec;
+    res = db.execute(sel, tbl);
+    if(res != 0) ELOG("sql execute failed");
+
+    list.resize(tbl.rowCount());
+    for(int i = 0; i < tbl.rowCount(); ++i){
+        list[i].reading_id = tbl.field("reading_id", i).toUint();
+        list[i].node_id = tbl.field("node_id", i).toUint();
+        list[i].device_id = tbl.field("device_id", i).toUint();
+        list[i].raw_value = std::stod(tbl.field("raw_value", i).str());
+        list[i].adj_value = std::stod(tbl.field("adj_value", i).str());
+        list[i].time.tv_sec = tbl.field("time_sec", i).toUint();
+        list[i].time.tv_nsec = tbl.field("time_nsec", i).toUint();
+    }
+
+    return list;
+}
+
 
 //! Create node
 node_id_t MhoDB::create_node(node_id_t parent, string name, string description){
@@ -286,7 +310,25 @@ int MhoDB::remove_node(node_id_t node){
 
 //! Get list of all nodes
 vector<node_info> MhoDB::list_nodes(){
-    return vector<node_info>();
+    int res;
+    ZTable tbl;
+    vector<node_info> list;
+
+    ZString sel = ZString("SELECT node_id, parent_id, name, description, time_added, time_removed FROM node_tree");
+    res = db.execute(sel, tbl);
+    if(res != 0) ELOG("sql execute failed");
+
+    list.resize(tbl.rowCount());
+    for(int i = 0; i < tbl.rowCount(); ++i){
+        list[i].node_id = tbl.field("node_id", i).toUint();
+        list[i].parent_id = tbl.field("parent_id", i).toUint();
+        list[i].name = tbl.field("name", i).str();
+        list[i].description = tbl.field("description", i).str();
+        list[i].time_added = tbl.field("time_added", i).toUint();
+        list[i].time_removed = tbl.field("time_removed", i).toUint();
+    }
+
+    return list;
 }
 
 
