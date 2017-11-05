@@ -8,7 +8,7 @@
 
 #define RETURN_INVALID_JSON(message) do { \
 resp["status"] = "failure"; \
-resp["reason"] = message \
+resp["reason"] = message ; \
 return resp; \
 } while(0)
 
@@ -50,10 +50,21 @@ ZJSON call(ZJSON json){
     if(func == "version"){
         resp_data["version"] = "0.2.0";
 
-    } else if(func == "fetch_data_by_node"){
+    } else if(func == "get_data_range"){
         // check if we have valid id list etc
         
         struct timespec ts_start, ts_end;
+        double start = json["args"]["start"].number();
+        double end   = json["args"]["end"].number();
+
+        ts_start.tv_sec  = (int)start;
+        ts_start.tv_nsec = (start - (double)(int)start) * 1000000;
+
+        ts_end.tv_sec  = (int)end;
+        ts_end.tv_nsec = (end - (double)(int)end) * 1000000;
+
+        LOG("s: " << timespec_to_string(&ts_start) <<
+          "  e: " << timespec_to_string(&ts_end));
 
         // for each node
         for(size_t i = 0; i < json["args"]["ids"].array().size(); ++i){
@@ -102,7 +113,7 @@ ZJSON call(ZJSON json){
 
             resp_data[ZString(device.device_id)] = device_data;
         }
-    } else if(func == "get_all_nodes"){
+
     } else if(func == "get_all_drivers"){
         std::vector<mho::driver_info> drivers = db->list_drivers();
         for(auto driver: drivers){
@@ -127,6 +138,8 @@ ZJSON call(ZJSON json){
         json["args"]["device_id"] = (double)dev_id;
 
         resp_data = json["args"];
+    } else {
+        RETURN_INVALID_JSON("unknown command");
     }
 
     resp["resp"] = resp_data;

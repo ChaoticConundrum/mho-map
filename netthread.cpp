@@ -81,11 +81,11 @@ void *NetThread::run(void *arg){
                     }
                     conn->in_buffer.clear();
 
-                    ELOG("input  json: " << str);
+                    LOG("input  json: " << str);
 
                     ZJSON resp = util::call(json);
 
-                    ELOG("output json: " << resp.encode());
+                    LOG("output json: " << resp.encode());
 
                     sendJSON(conn, resp);
                     break;

@@ -184,7 +184,6 @@ reading_id_t MhoDB::add_reading(device_id_t device, struct timespec *time, value
     res = db.execute(ZString("SELECT node_id, calibration FROM devices WHERE device_id = ") + device, tbl);
     if(res != 0) ELOG("sql execute failed");
 
-    DLOG("add_reading node_id: " << tbl.field("node_id", 0));
     value_t calib = std::stod(tbl.field("calibration", 0).str());
 
     ZString ins = ZString("INSERT INTO readings (node_id, device_id, raw_value, adj_value, time_sec, time_nsec) VALUES (") + tbl.field("node_id", 0) + ", " + device + ", " + raw_value + ", " + raw_value * calib + ", " + time->tv_sec + ", " + time->tv_nsec + ")";
@@ -339,7 +338,7 @@ vector<driver_info> MhoDB::list_drivers(){
     ZTable tbl;
     ZString sel = ZString("SELECT driver_id, user_description, name FROM drivers");
     res = db.execute(sel, tbl);
-    LOG(sqlite3_errmsg(db.handle()));
+
     if(res != 0) ELOG("sql execute failed");
     DLOG("list_drivers: " << tbl.rowCount());
 
