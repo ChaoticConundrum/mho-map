@@ -37,7 +37,7 @@ void DevicePoller::connect_device(mho::device_id_t device){
 
     if(_drivers.find(driver_row.driver_id) == _drivers.end()){
         // module not loaded
-        _drivers[driver_row.driver_id] = load_driver(driver_row.name);
+        _drivers[driver_row.driver_id] = load_driver(driver_row.name, db);
     }
 
     driver_t *driver = _drivers[driver_row.driver_id];
@@ -85,7 +85,7 @@ void DevicePoller::poll_loop(){
 
         driver_info driver_row = _db->get_driver_info(device.driver_id);
 
-        driver_t *driver = load_driver(driver_row.name);
+        driver_t *driver = load_driver(driver_row.name, db);
         if(!driver){
             throw std::runtime_error("Could not load driver " + driver_row.name); // kys
         }

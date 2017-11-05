@@ -24,7 +24,7 @@ std::vector<std::string> get_availible_drivers(){
     return list;
 }
 
-driver_t *load_driver(std::string name){
+driver_t *load_driver(std::string name, MhoDB *db){
     std::string libname = "driver/lib" + name + ".so";
 
     void *lib = dlopen(libname.c_str(), RTLD_LAZY);
@@ -60,7 +60,7 @@ driver_t *load_driver(std::string name){
     LOAD_SYM_OR_RETURN(get_device_address);
     LOAD_SYM_OR_RETURN(do_poll);
 
-    driver->load();
+    driver->load(db);
 
     LOG("Loaded driver \"" << name << "\" = " << driver);
 

@@ -26,12 +26,15 @@ static const char *ERROR_NO_MEM = "memory allocation error";
 
 static mho::driver_id_t driver_id;
 
+static MhoDB *_db;
+
 const char *name(){
     return driver_name;
 }
 
-bool load(){
-    driver_id = db.get_driver_id_or_create(name());
+bool load(MhoDB *db){
+    _db = db;
+    driver_id = db->get_driver_id_or_create(name());
 }
 
 void unload(){}
@@ -76,7 +79,7 @@ std::string get_device_address(mho::driver_device_t *dev){
 device_state_t do_poll(struct timespec *t, mho::driver_device_t *dev){
     mho::value_t value = 5 * sin(t->tv_sec / 60.0) + 2;
 
-    db.add_reading(dev->device_id, t, raw_value);
+    db->add_reading(dev->device_id, t, raw_value);
 
     return DEVICE_OK;
 }
