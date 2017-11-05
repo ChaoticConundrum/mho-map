@@ -12,6 +12,8 @@
     } \
 } while(0)
 
+namespace mho {
+
 std::vector<std::string> get_availible_drivers(){
     // FIXME:
     // open dir listing, etc...
@@ -60,7 +62,7 @@ driver_t *load_driver(std::string name){
 
     driver->load();
 
-    ILOG("Loaded driver \"" << name << "\"");
+    LOG("Loaded driver \"" << name << "\" = " << driver);
 
     return driver;
 }
@@ -69,13 +71,14 @@ bool unload_driver(driver_t *driver){
     driver->disconnect_all_devices();
     driver->unload();
 
-    dlclose(driver->lib);
+    LOG("Unloading driver \"" << driver->get_name() << "\" = " << driver);
 
-    ILOG("Unloaded driver \"" << name << "\"");
+    dlclose(driver->lib);
 
     delete driver;
 
     return true;
 }
 
+} // mho
 

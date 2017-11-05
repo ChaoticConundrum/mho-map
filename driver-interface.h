@@ -10,7 +10,9 @@
 #include <time.h>
 
 #ifndef DRIVER_IMPL
+namespace mho {
 struct driver_device_t {};
+} // mho
 #endif
 
 enum device_state_t {
@@ -38,16 +40,16 @@ void add_to_util_list(); // FIXME: real impl
 // autodiscovery
 std::vector<std::string> discover_device_addresses();
 
-driver_device_t *connect_to_device(mho::device_id_t device);
-void disconnect_device(driver_device_t *dev);
+mho::driver_device_t *connect_to_device(mho::device_id_t device);
+void disconnect_device(mho::driver_device_t *dev);
 
 // for use before force-unloading a module... which isnt a great
 // idea...
 void disconnect_all_devices();
 
-std::string get_device_address(driver_device_t *dev);
+std::string get_device_address(mho::driver_device_t *dev);
 
-device_state_t do_poll(struct timespec t, driver_device_t *dev);
+device_state_t do_poll(struct timespec *t, mho::driver_device_t *dev);
 
 #endif /* DRIVER_INTERFACE_H_INCLUDED */
 

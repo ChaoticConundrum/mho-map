@@ -6,6 +6,8 @@
 
 #include "driver-interface.h"
 
+namespace mho {
+
 // This pretty much mirrors everything in driver-interface.h
 struct driver_t {
     const char *(*get_name)();
@@ -17,12 +19,12 @@ struct driver_t {
 
     std::vector<std::string> (*discover_device_addresses)();
 
-    driver_device_t *(*connect_to_device)(std::string address);
-    void (*disconnect_device)(driver_device_t *dev);
+    driver_device_t *(*connect_to_device)(mho::device_id_t device);
+    void (*disconnect_device)(mho::driver_device_t *dev);
     void (*disconnect_all_devices)();
 
-    std::string (*get_device_address)(driver_device_t *dev);
-    device_state_t (*do_poll)(struct timespec t, driver_device_t *dev);
+    std::string (*get_device_address)(mho::driver_device_t *dev);
+    device_state_t (*do_poll)(struct timespec *t, mho::driver_device_t *dev);
 
     // probably should be "private"...
     void *lib;
@@ -33,6 +35,8 @@ std::vector<std::string> get_availible_drivers();
 // takes name as in "faux-driver", NOT "libfaux-driver.so"
 driver_t *load_driver(std::string name);
 bool unload_driver(driver_t *driver);
+
+} // mho
 
 #endif /* DRIVER_H_INCLUDED */
 

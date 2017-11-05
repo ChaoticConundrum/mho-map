@@ -6,10 +6,14 @@
 
 #include "mho-types.h"
 
+namespace mho {
+
 struct driver_device_t {
     std::string node_id; // ayy strings
     std::string address;
 };
+
+} // mho
 
 // defined this and define device_driver_t before including driver-intarface.h
 #define DRIVER_IMPL
@@ -48,8 +52,8 @@ std::vector<std::string> discover_device_addresses(){
     return std::vector<std::string>();
 }
 
-driver_device_t *connect_to_device(mho::node_id_t dev_id){
-    driver_device_t *dev = new driver_device_t();
+mho::driver_device_t *connect_to_device(mho::node_id_t dev_id){
+    mho::driver_device_t *dev = new mho::driver_device_t();
     if(!dev){
         driver_error = ERROR_NO_MEM;
     return nullptr;
@@ -58,7 +62,7 @@ driver_device_t *connect_to_device(mho::node_id_t dev_id){
     return nullptr;
 }
 
-void disconnect_device(driver_device_t *dev){
+void disconnect_device(mho::driver_device_t *dev){
     // blah. nothing to do for this driver.
 }
 
@@ -66,12 +70,12 @@ void disconnect_all_devices(){
     // blah. nothing to do for this driver.
 }
 
-std::string get_device_address(driver_device_t *dev){
+std::string get_device_address(mho::driver_device_t *dev){
     return dev->address;
 }
 
-device_state_t do_poll(struct timespec t, driver_device_t *dev){
-    mho::value_t value = 5 * sin(t.tv_sec) + 2;
+device_state_t do_poll(struct timespec *t, mho::driver_device_t *dev){
+    mho::value_t value = 5 * sin(t->tv_sec / 60.0) + 2;
 
     // FIXME: DB
     // db.add_reading(dev->device_id, t, raw_value, adj_value,

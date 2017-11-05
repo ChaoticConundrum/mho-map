@@ -30,7 +30,7 @@ struct driver_info {
 
 struct device_info {
     device_id_t device_id;
-    driver_id_t type_id;
+    driver_id_t driver_id;
     string description;
     node_id_t node_id;
     value_t calibration;
