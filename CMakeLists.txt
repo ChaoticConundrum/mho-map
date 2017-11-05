@@ -22,6 +22,8 @@ SET(SOURCES
     driver.cpp
     devicepoller.h
     devicepoller.cpp
+    util.h
+    util.cpp
 )
 
 ### =================== BUILD =================== ###

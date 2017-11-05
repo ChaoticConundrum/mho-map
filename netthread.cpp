@@ -1,6 +1,7 @@
 #include "netthread.h"
 #include "tcpserver.h"
 #include "connection.h"
+#include "util.h"
 
 #include "zlog.h"
 #include "zjson.h"
@@ -80,43 +81,7 @@ void *NetThread::run(void *arg){
                     }
                     conn->in_buffer.clear();
 
-                    if(!json.object().contains("func") || json["func"].type() != ZJSON::STRING
-                        || !json.object().contains("seq") || json["seq"].type() != ZJSON::NUMBER){
-                        ELOG("invalid request fields (need \"func\" and \"seq\")");
-                        ZJSON resp(ZJSON::OBJECT);
-                        resp["error"] = "invalid fields";
-                        sendJSON(conn, resp);
-                        break;
-                    }
-
-                    ZString func = json["func"].string();
-                    LOG(str);
-                    LOG("Function: " << func);
-
-                    ZJSON resp(ZJSON::OBJECT);
-                    resp["seq"] = json["seq"];
-                    ZJSON resp_data(ZJSON::OBJECT);
-
-                    // FIXME: offload into util.call(string map)
-                    if(func == "version"){
-                        resp_data["version"] = "0.1.0";
-                    } else if(func == "fetch_data_by_node"){
-                        // check if we have valid id list etc
-                        for(size_t i = 0; i < json["args"]["ids"].array().size(); ++i){
-                            // FIXME: verify type of json object is correct
-                            ZJSON valueArray(ZJSON::ARRAY);
-                            for(int j = 0; j < 2; ++i){
-                                ZJSON data(ZJSON::OBJECT);
-                                data["time"] = ((double)time(nullptr)) + j/2;
-                                data["power"] = sin(time(nullptr)/3600.0) + 2.0;
-                                valueArray[i] = data;
-                            }
-                            resp_data[ZString((int)json["args"]["ids"][i].number())] = valueArray;
-                        }
-                        // FIXME: call driver
-                    }
-
-                    resp["resp"] = resp_data;
+                    ZJSON resp = util::call(json);
 
                     sendJSON(conn, resp);
                     break;
