@@ -83,8 +83,20 @@ ZJSON call(ZJSON input){
 
             resp_data[ZString(node.node_id)] = node_data;
         }
+
     } else if(func == "get_all_devices"){
     } else if(func == "get_all_nodes"){
+    } else if(func == "create_device"){
+        mho::driver_id_t driver_id = (uint32_t)json["args"]["driver_id"].number();
+        std::string description    = json["args"]["description"].string().str();
+        mho::node_id_t  node_id    = (int)json["args"]["node_id"].number();
+        double calibration         = json["args"]["calibration"].number();
+        std::string address        = json["args"]["address"].string().str();
+
+        mho::device_id_t dev_id = db->create_device(driver_id, description, node_id, calibration, address);
+        json["args"]["device_id"] = (double)dev_id;
+
+        resp_data = json["args"];
     }
 
     resp["resp"] = resp_data;
