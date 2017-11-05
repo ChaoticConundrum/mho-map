@@ -1,7 +1,7 @@
 ## Mho-Map CMakeLists.txt
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-PROJECT(JCache)
+PROJECT(mhO-Map)
 
 ADD_SUBDIRECTORY(libchaos)
 
@@ -9,6 +9,11 @@ ADD_SUBDIRECTORY(libchaos)
 
 SET(SOURCES
     main.cpp
+    tcpserver.h
+    tcpserver.cpp
+    connection.h
+    netthread.h
+    netthread.cpp
 )
 
 ### =================== BUILD =================== ###
