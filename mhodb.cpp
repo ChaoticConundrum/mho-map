@@ -156,7 +156,7 @@ vector<device_info> MhoDB::list_devices(){
     vector<device_info> list;
 
     ZTable tbl;
-    ZString sel = ZString("SELECT device_id, driver_id, description, node_id, calibration, address, state FROM devices WHERE state != 2");
+    ZString sel = ZString("SELECT device_id, driver_id, description, node_id, calibration, address, state FROM devices WHERE state IS NOT 2");
     res = db.execute(sel, tbl);
     if(res != 0) ELOG("sql execute failed");
     DLOG("list_devices: " << tbl.rowCount());
