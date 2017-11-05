@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 
 #include <string>
 #include <map>
@@ -10,6 +11,8 @@ namespace mho {
 
 struct driver_device_t {
     device_id_t device_id; // ayy strings
+    std::string address;
+    double freq, amp, phase, dc;
 };
 
 } // mho
@@ -65,6 +68,20 @@ mho::driver_device_t *connect_to_device(mho::device_id_t dev_id){
         return nullptr;
     }
     dev->device_id = dev_id;
+    dev->amp   = 5;
+    dev->phase = 0;
+    dev->dc    = 2;
+
+    double freq, amp, phs, dc;
+
+    mho::device_info info = _db->get_device_info(dev_id);
+    int read = sscanf(info.address.c_str(), "%lf %lf %lf %lf", &freq, &amp, &phs, &dc);
+
+    if(read-- > 0) dev->freq  = freq;
+    if(read-- > 0) dev->amp   = amp;
+    if(read-- > 0) dev->phase = phs;
+    if(read-- > 0) dev->dc    = dc;
+
     return dev;
 }
 
@@ -83,7 +100,7 @@ std::string get_device_address(mho::driver_device_t *dev){
 }
 
 device_state_t do_poll(struct timespec *t, mho::driver_device_t *dev){
-    mho::value_t value = 5 * sin(t->tv_sec / 60.0) + 2;
+    mho::value_t value = dev->amp * sin(dev->freq * t->tv_sec / 6.0 + dev->phase) + dev->dc;
 
     _db->add_reading(dev->device_id, t, value);
 
