@@ -20,6 +20,8 @@ SET(SOURCES
     netthread.cpp
     driver.h
     driver.cpp
+    devicepoller.h
+    devicepoller.cpp
 )
 
 ### =================== BUILD =================== ###

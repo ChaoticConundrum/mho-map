@@ -1,0 +1,4 @@
+Fix prepared statements
+
+destroy the intense coupling of database IDs and stuff in DevicePoller
+

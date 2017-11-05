@@ -31,8 +31,7 @@ const char *name(){
 }
 
 bool load(){
-    // FIXME: db
-    // driver_id = db.get_driver_id_or_create(name());
+    driver_id = db.get_driver_id_or_create(name());
 }
 
 void unload(){}
@@ -77,8 +76,7 @@ std::string get_device_address(mho::driver_device_t *dev){
 device_state_t do_poll(struct timespec *t, mho::driver_device_t *dev){
     mho::value_t value = 5 * sin(t->tv_sec / 60.0) + 2;
 
-    // FIXME: DB
-    // db.add_reading(dev->device_id, t, raw_value, adj_value,
+    db.add_reading(dev->device_id, t, raw_value);
 
     return DEVICE_OK;
 }

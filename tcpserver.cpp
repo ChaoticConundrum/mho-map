@@ -229,7 +229,7 @@ void TCPServer::run(){
     while(runflag){
         ret = epoll_wait(epfd, events, MAX_EVENTS, WAIT_TIMEOUT);
         if(ret < 0){
-            ELOG("epoll wait failed " << ZError::getSystemError());
+            //ELOG("epoll wait failed " << ZError::getSystemError());
             continue;
         }
 

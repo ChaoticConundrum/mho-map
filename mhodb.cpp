@@ -55,8 +55,16 @@ driver_id_t MhoDB::create_driver(string name, string description){
 
 //! Get ID of driver name or create driver with name and return ID
 driver_id_t MhoDB::get_driver_id_or_create(string name){
+    int res;
+    ZTable tbl;
+    ZString sel = ZString("SELECT driver_id FROM drivers WHERE name = '") + name + "'";
+    res = db.execute(sel, tbl);
+    if(res != 0) ELOG("sql execute failed");
 
-    return 0;
+    if(tbl.rowCount())
+        return tbl.field("driver_id", 0).toUint();
+    else
+        return create_driver(name, "");
 }
 
 //! Get driver info
