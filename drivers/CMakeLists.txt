@@ -7,6 +7,8 @@ INCLUDE_DIRECTORIES(
     ..
 )
 
+SET(CMAKE_CXX_STANDARD 11)
+
 ADD_LIBRARY(faux-driver MODULE
     faux-driver.cpp
 )
