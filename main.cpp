@@ -14,6 +14,7 @@ int main(int argc, char **argv){
     try {
 
         MhoDB db("psb.db");
+        //db.create_driver("test", "test driver");
 
         TCPServer server(4);
         server.run();
