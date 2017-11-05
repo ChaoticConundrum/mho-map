@@ -77,8 +77,9 @@ void *NetThread::run(void *arg){
                     }
                     conn->in_buffer.clear();
 
-                    if(!json.object().contains("func") || json["func"].type() != ZJSON::STRING){
-                        ELOG("invalid request fields");
+                    if(!json.object().contains("func") || json["func"].type() != ZJSON::STRING
+                        || !json.object().contains("seq") || json["seq"].type() != ZJSON::NUMBER){
+                        ELOG("invalid request fields (need \"func\" and \"seq\")");
                         ZJSON resp(ZJSON::OBJECT);
                         resp["error"] = "invalid fields";
                         sendJSON(conn, resp);
@@ -90,7 +91,21 @@ void *NetThread::run(void *arg){
                     LOG("Function: " << func);
 
                     ZJSON resp(ZJSON::OBJECT);
-                    resp["seq"] = 0;
+                    resp["seq"] = json["seq"];
+                    ZJSON resp_data(ZJSON::OBJECT);
+
+                    // FIXME: offload into util.call(string map)
+                    if(func == "version"){
+                        resp_data["version"] = "0.1.0";
+                    } else if(func == "fetch_data_by_node"){
+                        // check if we have valid id list etc
+                        // for
+                        // resp_data[""];
+                        // FIXME: call driver
+                    }
+
+                    resp["resp"] = resp_data;
+
                     sendJSON(conn, resp);
                     break;
                 }
