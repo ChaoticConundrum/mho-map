@@ -16,7 +16,7 @@ MhoDB::MhoDB(ZPath file){
         ELOG("create table failed");
     }
 
-    res = db.execute("CREATE TABLE IF NOT EXISTS devices (device_id INTEGER PRIMARY KEY ASC, type_id INTEGER, description TEXT, node_id INTEGER, calibration REAL, address TEXT)", tbl);
+    res = db.execute("CREATE TABLE IF NOT EXISTS devices (device_id INTEGER PRIMARY KEY ASC, type_id INTEGER, description TEXT, node_id INTEGER, calibration REAL, address TEXT, state INTEGER)", tbl);
     if(res != 0){
         ELOG("create table failed");
     }
@@ -26,7 +26,7 @@ MhoDB::MhoDB(ZPath file){
         ELOG("create table failed");
     }
 
-    res = db.execute("CREATE TABLE IF NOT EXISTS node_tree (node_id INTEGER PRIMARY KEY ASC, parent_id INTEGER, name TEXT, description TEXT, ime_added INTEGER, time_removed INTEGER)", tbl);
+    res = db.execute("CREATE TABLE IF NOT EXISTS node_tree (node_id INTEGER PRIMARY KEY ASC, parent_id INTEGER, name TEXT, description TEXT, time_added INTEGER, time_removed INTEGER)", tbl);
     if(res != 0){
         ELOG("create table failed");
     }
