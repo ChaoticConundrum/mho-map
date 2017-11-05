@@ -20,7 +20,7 @@ void sendData(ZPointer<Connection> conn, const ZBinary &data){
 
     // bump the out event
     zbyte count[8];
-    ZBinary::enczu64(count, 1);
+    ZBinary::encleu64(count, 1);
     long ret = write(conn->out_eventfd, count, 8);
     if(ret != 8){
         ELOG("write error");
