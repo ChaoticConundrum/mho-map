@@ -5,7 +5,7 @@
 #define LOAD_SYM_OR_RETURN(sym_name) do { \
     driver->sym_name = (typeof(driver->sym_name))dlsym(lib, #sym_name); \
     if(!driver->sym_name){ \
-        fprintf(stderr, "Could not load symbol %s in driver\n", #sym_name, name.c_str()); \
+        fprintf(stderr, "Could not load symbol %s in driver %s\n", #sym_name, name.c_str()); \
         return nullptr; \
     } \
 } while(0)

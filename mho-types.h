@@ -17,6 +17,6 @@ typedef double calibration_t;
 // use struct timespec for times.
 // { .tv_sec, .tv_nsec }
 
-}; // mho
+} // mho
 
 #endif /* MHO_TYPES_H_INCLUDED */
