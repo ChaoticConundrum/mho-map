@@ -22,12 +22,14 @@ enum device_state_t {
     DEVICE_DISCONNECTED,
 };
 
+extern "C" {
+
 // Driver state functions
 
 // This should be the same as the shared object name. This is
 // because we need to be able to find the driver to load from
 // this identifier after a server restart
-const char *get_name();
+const char *name();
 bool load(MhoDB *db);
 void unload();
 
@@ -52,6 +54,8 @@ void disconnect_all_devices();
 std::string get_device_address(mho::driver_device_t *dev);
 
 device_state_t do_poll(struct timespec *t, mho::driver_device_t *dev);
+
+}
 
 #endif /* DRIVER_INTERFACE_H_INCLUDED */
 

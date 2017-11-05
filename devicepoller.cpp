@@ -33,11 +33,12 @@ void DevicePoller::start_polling(DevicePoller *dp){
 void DevicePoller::connect_device(mho::device_id_t device){
     _table_lock.lock();
 
-    driver_info driver_row = _db->get_driver_info(device);
+    device_info device_row = _db->get_device_info(device);
+    driver_info driver_row = _db->get_driver_info(device_row.driver_id);
 
     if(_drivers.find(driver_row.driver_id) == _drivers.end()){
         // module not loaded
-        _drivers[driver_row.driver_id] = load_driver(driver_row.name, db);
+        _drivers[driver_row.driver_id] = load_driver(driver_row.name, _db);
     }
 
     driver_t *driver = _drivers[driver_row.driver_id];
@@ -85,7 +86,7 @@ void DevicePoller::poll_loop(){
 
         driver_info driver_row = _db->get_driver_info(device.driver_id);
 
-        driver_t *driver = load_driver(driver_row.name, db);
+        driver_t *driver = load_driver(driver_row.name, _db);
         if(!driver){
             throw std::runtime_error("Could not load driver " + driver_row.name); // kys
         }
@@ -126,7 +127,7 @@ void DevicePoller::poll_loop(){
         _table_lock.unlock();
 
         // sleep until 1 second after we started
-        { using namespace std::chrono_literals; 
+        { using namespace std::chrono_literals;
             start += 1s; }
         std::this_thread::sleep_until(start);
     }

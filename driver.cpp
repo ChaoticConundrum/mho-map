@@ -25,7 +25,8 @@ std::vector<std::string> get_availible_drivers(){
 }
 
 driver_t *load_driver(std::string name, MhoDB *db){
-    std::string libname = "driver/lib" + name + ".so";
+    std::string libname = "drivers/lib" + name + ".so";
+    LOG(name << " " << libname);
 
     void *lib = dlopen(libname.c_str(), RTLD_LAZY);
     if(!lib){
@@ -48,7 +49,7 @@ driver_t *load_driver(std::string name, MhoDB *db){
 
     driver->lib = lib;
 
-    LOAD_SYM_OR_RETURN(get_name);
+    LOAD_SYM_OR_RETURN(name);
     LOAD_SYM_OR_RETURN(load);
     LOAD_SYM_OR_RETURN(unload);
     LOAD_SYM_OR_RETURN(error);
@@ -71,7 +72,7 @@ bool unload_driver(driver_t *driver){
     driver->disconnect_all_devices();
     driver->unload();
 
-    LOG("Unloading driver \"" << driver->get_name() << "\" = " << driver);
+    LOG("Unloading driver \"" << driver->name() << "\" = " << driver);
 
     dlclose(driver->lib);
 

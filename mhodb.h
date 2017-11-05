@@ -36,7 +36,7 @@ public:
     vector<device_info> list_devices();
 
     //! Add reading entry
-    reading_id_t add_reading(device_id_t device, struct timespec time, value_t raw_value);
+    reading_id_t add_reading(device_id_t device, struct timespec *time, value_t raw_value);
     //! Get reading info
     reading_info get_reading_info(reading_id_t reading);
 

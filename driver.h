@@ -12,7 +12,7 @@ namespace mho {
 
 // This pretty much mirrors everything in driver-interface.h
 struct driver_t {
-    const char *(*get_name)();
+    const char *(*name)();
     bool (*load)(MhoDB *db);
     void (*unload)();
     const char *(*error)();

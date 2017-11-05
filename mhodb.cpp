@@ -69,7 +69,16 @@ driver_id_t MhoDB::get_driver_id_or_create(string name){
 
 //! Get driver info
 driver_info MhoDB::get_driver_info(driver_id_t driver){
+    int res;
+    ZTable tbl;
     driver_info info;
+
+    ZString sel = ZString("SELECT name, user_description FROM drivers WHERE driver_id = ") + driver;
+    res = db.execute(sel, tbl);
+
+    info.driver_id = driver;
+    info.name = tbl.field("name", 0).str();
+    info.description = tbl.field("user_description", 0).str();
 
     return info;
 }
@@ -99,7 +108,20 @@ device_id_t MhoDB::create_device(driver_id_t driver, string description, node_id
 
 //! Get device info
 device_info MhoDB::get_device_info(device_id_t device){
+    int res;
+    ZTable tbl;
     device_info info;
+
+    ZString sel = ZString("SELECT driver_id, description, node_id, calibration, address, state FROM devices WHERE device_id = ") + device;
+    res = db.execute(sel, tbl);
+
+    info.device_id = device;
+    info.driver_id = tbl.field("driver_id", 0).toUint();
+    info.description = tbl.field("user_description", 0).str();
+    info.node_id = tbl.field("node_id", 0).toUint();
+    info.calibration = std::stod(tbl.field("calibration", 0).str());
+    info.address = tbl.field("address", 0).str();
+    info.state = (mho::device_state)tbl.field("state", 0).tint();
 
     return info;
 }
@@ -123,7 +145,7 @@ vector<device_info> MhoDB::list_devices(){
 
 
 //! Add reading entry
-reading_id_t MhoDB::add_reading(device_id_t device, struct timespec time, value_t raw_value){
+reading_id_t MhoDB::add_reading(device_id_t device, struct timespec *time, value_t raw_value){
     int res;
 
     ZTable tbl;
@@ -132,7 +154,7 @@ reading_id_t MhoDB::add_reading(device_id_t device, struct timespec time, value_
     DLOG("add_reading node_id: " << tbl.field("node_id", 0));
     value_t calib = std::stod(tbl.field("calibration", 0).str());
 
-    ZString ins = ZString("INSERT INTO readings (node_id, device_id, raw_value, adj_value, time_sec, time_nsec) VALUES (") + tbl.field("node_id", 0) + ", " + device + ", " + raw_value + ", " + raw_value * calib + ", " + time.tv_sec + ", " + time.tv_nsec + ")";
+    ZString ins = ZString("INSERT INTO readings (node_id, device_id, raw_value, adj_value, time_sec, time_nsec) VALUES (") + tbl.field("node_id", 0) + ", " + device + ", " + raw_value + ", " + raw_value * calib + ", " + time->tv_sec + ", " + time->tv_nsec + ")";
     //LOG(ins);
     res = db.execute(ins);
     if(res != 0) ELOG("sql execute failed");
