@@ -5,6 +5,8 @@ PROJECT(JCache)
 
 ADD_SUBDIRECTORY(libchaos)
 
+ADD_SUBDIRECTORY(drivers)
+
 ### =================== SOURCES =================== ###
 
 SET(SOURCES
