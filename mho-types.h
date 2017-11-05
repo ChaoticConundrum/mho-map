@@ -23,7 +23,7 @@ enum device_state {
 };
 
 struct driver_info {
-    driver_id_t type_id;
+    driver_id_t driver_id;
     string name;
     string description;
 };
