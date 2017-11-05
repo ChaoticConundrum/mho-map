@@ -11,6 +11,9 @@ typedef uint32_t type_id_t;
 
 typedef double value_t:
 
+// use struct timespec for times.
+// { .tv_sec, .tv_nsec }
+
 }; // mho
 
 #endif /* MHO_TYPES_H_INCLUDED */
