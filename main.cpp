@@ -15,7 +15,7 @@ int main(int argc, char **argv){
 
     try {
 
-        MhoDB db("psb.db");
+        MhoDB *db = MhoDB::instance();
 
         //driver_id_t dr = db.create_driver("test", "test driver");
         //device_id_t dev = db.create_device(dr, "test device", 0, 1.0f, "local");
@@ -24,7 +24,7 @@ int main(int argc, char **argv){
         //reading_id_t r = db.add_reading(dev, &ts, 4.2645);
         //LOG("reading: " << r);
 
-        DevicePoller device_poller(&db);
+        DevicePoller device_poller(db);
         device_poller.start_loop();
 
         device_poller.connect_device(16);

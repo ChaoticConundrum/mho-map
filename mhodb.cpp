@@ -197,3 +197,18 @@ int MhoDB::remove_node(node_id_t node){
     return -1;
 }
 
+//! Get list of all nodes
+vector<node_info> MhoDB::list_nodes(){
+    return vector<node_info>();
+}
+
+
+MhoDB *MhoDB::_instance = nullptr;
+
+MhoDB *MhoDB::instance(){
+    if(!_instance)
+        _instance = new MhoDB("psb.db");
+
+    return _instance;
+}
+

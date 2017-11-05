@@ -48,6 +48,14 @@ public:
     int set_node_info(node_id_t, string name, string description);
     //! Remove node
     int remove_node(node_id_t node);
+    //! Get list of all nodes
+    vector<node_info> list_nodes();
+
+public:
+    static MhoDB *instance();
+
+private:
+    static MhoDB *_instance;
 
 private:
     ZDatabase db;
