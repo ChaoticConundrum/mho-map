@@ -47,10 +47,12 @@ MhoDB::MhoDB(ZPath file){
 driver_id_t MhoDB::create_driver(string name, string description){
     int res;
     LOG("1");
-    res = stmt_create_driver.bind("name", name);
+    res = stmt_create_driver.bind(1, name);
     if(res != 0) ELOG("sql bind failed");
+    //LOG(sqlite3_errmsg(db.handle()));
+
     LOG("2");
-    res = stmt_create_driver.bind("desc", description);
+    res = stmt_create_driver.bind(2, description);
     if(res != 0) ELOG("sql bind failed");
     LOG("3");
 
